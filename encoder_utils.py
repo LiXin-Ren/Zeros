@@ -21,7 +21,8 @@ def load_data(path):
         dir_path = os.path.join(path, d)
         imgs = os.listdir(dir_path)
         num = len(imgs)
-        label = [d] * num
+        #label = [d] * num
+        label = [d for i in range(num)]
         labels.extend(label)
         count += len(imgs)
         for img in imgs:
@@ -59,10 +60,10 @@ def get_per_attributes():
 def read_and_decode(path, epochs):
     imgs, labels = load_data(path)
 
-    per_attributes = get_per_attributes()
+    per_attributes = get_per_attributes()	#字典：类别：属性
     label_list = []
     for i in range(len(labels)):
-        label_list.append(per_attributes[labels[i]])  
+        label_list.append(per_attributes[labels[i]])  #标签
     
     #label_list = tf.convert_to_tensor(label_arr, tf.float32)
     img_list = tf.cast(imgs, tf.string)
@@ -71,6 +72,7 @@ def read_and_decode(path, epochs):
     decode_img = tf.image.decode_jpeg(read_img, channels = 3)
     resize_img = tf.image.resize_images(decode_img, [64, 64])
     label = filename_queue[1]
+    resize_img /= 255.0
     #label = tf.string_to_number(label, tf.float32)
 
     return resize_img, label
@@ -78,7 +80,7 @@ def read_and_decode(path, epochs):
 if __name__ == '__main__':
     imgs, labels = read_and_decode('for_train', 5)
     feature_batch, label_batch = tf.train.shuffle_batch(
-           [imgs, labels], batch_size = 5,
+           [imgs, labels], batch_size = 16,
            capacity = 200, min_after_dequeue = 100)
 
     with tf.Session() as sess:
@@ -87,7 +89,7 @@ if __name__ == '__main__':
         threads = tf.train.start_queue_runners(sess = sess)
         for i in range(3):
             print("i: ", i)
-            f, l = sess.run([feature_batch, label_batch])
-            print("f.shape: ", f.shape)
+            fearure, label = sess.run([feature_batch, label_batch])
+            print("feature.shape: ", feature.shape)
 
     
