@@ -1,4 +1,9 @@
 dea/*
+vgg19W_model
+Records
+before
+__pycache__
+
 DatasetA_test
 for_train
 DatasetA_test
@@ -6,4 +11,5 @@ DatasetA_train
 train
 *.txt
 *.zip
-
+*.out
+*.csv
