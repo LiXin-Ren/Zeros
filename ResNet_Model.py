@@ -73,9 +73,9 @@ def encoder(inputs):
     return fcb
 
 
-def feature_attrites(vgg_out, attrites):
+def feature_attributes(vgg_out, attributes):
     W = tf.layers.dense(vgg_out, 30, activation = None, name = 'W')
-    logits = tf.matmul(W, attrites, name = "attrites_W")
+    logits = tf.matmul(W, attributes, name = "attributes_W")
 
     return W, logits
 
