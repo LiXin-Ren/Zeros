@@ -47,7 +47,7 @@ def encoder(inputs):
     conv1 = conv2d_same(inputs, 64, 7, 2)       #112*112*64 conv+relu
 
     #block1   inputs: 112*112*64 output: 56*56*64 块1的channel都为64 重复3次
-    pool1 = tf.layers.max_pooling2d(conv1, [2, 2], strides=[2, 2], padding="valid")         #池化：56*56*64
+    pool1 = tf.layers.max_pooling2d(conv1, [3, 3], strides=[2, 2], padding="same")         #池化：56*56*64
     # block1 = tf.layers.conv2d(pool1, 64, [3, 3], strides=[2, 2], padding="valid", activation=tf.nn.relu) #56*56*64
     block1 = res_block(pool1, filters=64, kernel_size=3, stride=1, block_num=2)       #ouput:56*56*64
 
@@ -80,13 +80,12 @@ def feature_attributes(vgg_out, attributes):
     return W, logits
 
 if __name__ == "__main__":
-    X = tf.placeholder(tf.float32, [None, 224, 224, 3], name="x")
+    X = tf.placeholder(tf.float32, [None, 224, 224, 3])
     img = cv2.imread("1.jpeg")
 
     #decode_img = tf.image.decode_image(img, channels = 3)
     resize_image = cv2.resize(img, (224, 224))
     resize_image = resize_image[np.newaxis, :, :, :]
-    resize_image = tf.cast(resize_image, tf.float32)
     res = encoder(X)
     #res = resnet_v1.resnet_v1_50(X)
     with tf.Session() as sess:
