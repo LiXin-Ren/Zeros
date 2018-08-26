@@ -36,7 +36,7 @@ def conv2d_same(inputs, num_outputs, kernel_size, stride=1):
         inputs = tf.pad(inputs, [[0, 0], [pad_beg, pad_end], [pad_beg, pad_end], [0, 0]])
         return tf.layers.conv2d(inputs, num_outputs, [kernel_size, kernel_size], [stride, stride], padding="valid", activation=tf.nn.relu)
 
-def encoder(inputs):
+def ResNet_34(inputs):
     """
         resnet_50: 3-4-6-3
         :param inputs:
@@ -68,16 +68,24 @@ def encoder(inputs):
     block4 = res_block(block4_conv1_2, filters=512, kernel_size=3, stride=1, block_num=2)
 
     flat = tf.reshape(block4, [-1, 7*7*512], name = 'flat')  # 25088
-    fcb = tf.layers.dense(flat, 1024, activation = None, name = 'fcb1')
+    fcb1 = tf.layers.dense(flat, 1024, activation = None, name = 'fcb1')
+    fcb2 = tf.layers.dense(fcb1, 30, activation=None)     #(None, 30)
+   # print("res_out.shape", fcb2.shape)
+    return fcb2
 
-    return fcb
+def feature_attributes(net_out, attributes):
+    """
+    建立网络的输出(视觉潜入)与属性（语义潜入）的联系。
+    :param net_out:
+    :param attributes:
+    :return:
+    """
+    logits = tf.matmul(net_out, attributes, name = "attributes_W")    #(None, 200)
+ #   print("attribute:", attributes.shape)     #(30, 200)
+ #   print("logit: ", logits.shape)
+    return logits
 
 
-def feature_attributes(vgg_out, attributes):
-    W = tf.layers.dense(vgg_out, 30, activation = None, name = 'W')
-    logits = tf.matmul(W, attributes, name = "attributes_W")
-
-    return W, logits
 
 if __name__ == "__main__":
     X = tf.placeholder(tf.float32, [None, 224, 224, 3])
@@ -86,7 +94,7 @@ if __name__ == "__main__":
     #decode_img = tf.image.decode_image(img, channels = 3)
     resize_image = cv2.resize(img, (224, 224))
     resize_image = resize_image[np.newaxis, :, :, :]
-    res = encoder(X)
+    res = ResNet_34(X)
     #res = resnet_v1.resnet_v1_50(X)
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())

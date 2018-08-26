@@ -1,40 +1,23 @@
-import cv2
-import os
+import tensorflow as tf
+a = tf.constant([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+b = tf.constant([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+queue = tf.train.slice_input_producer([a, b], shuffle=True, num_epochs=5)
+queue1 = queue[0]
+queue2 = queue[1]
+x, y = tf.train.shuffle_batch([queue1, queue2], batch_size=10, capacity=200, min_after_dequeue=20)
 
-test_image_dir = "DatasetA_test/test"
-imgListFile = open("DatasetA_test/image.txt", "r")
-line = imgListFile.readline()
-submit = open("submit.txt", "a")
-while line:
-    file_dir = os.path.join(test_image_dir, line)
-
-   # print(file_dir)
-    if not os.path.exists(file_dir):
-        print("file_dir:",file_dir)
-        print("%snot exists" % file_dir)
-            #    return 0
-    else:
-        print("%s is exist" %file_dir)
-    img = cv2.imread(os.path.join(test_image_dir, line))
-   # print(os.path.join(test_image_dir, line))
-    print(img.shape)
-    line = imgListFile.readline()
-"""
-with open("DatasetA_test/image.txt", "r") as imgListFile:
-    with open("submit.txt", "a") as submitFile:
-        line = imgListFile.readline()
-        while line:
-            file_dir = os.path.join(test_image_dir, line)
-            print(file_dir)
-            if not os.path.exists(file_dir):
-                print("image not exists")
-            #    return 0
-            img = cv2.imread(os.path.join(test_image_dir, line))
-            print(os.path.join(test_image_dir, line))
-            print(img.shape)
-"""
-#tasetA_test/image.txt", "r")if not os.path.exists("/home/lisren/Zeros/DatasetA_test/test/00ddbe75d7aff5037d360401af02ca57.jpg"):
-#    print("yes")
-#else:
-#    print("exist")
-#mg = cv2.imread("DatasetA_test/test/00ddbe75d7aff5037d360401af02ca57.jpg")
+with tf.Session() as sess:
+    sess.run(tf.global_variables_initializer())
+    sess.run(tf.local_variables_initializer())
+    coord = tf.train.Coordinator()
+    thread = tf.train.start_queue_runners(sess=sess, coord=coord)
+    i = 1
+    try:
+        while not coord.should_stop():
+            print("i:", i)
+            print("batch_x: ", sess.run(x))
+            print("batch_y: ", sess.run(y))
+           # print("queue: ", sess.run(queue))
+            i += 1
+    except tf.errors.OutOfRangeError:
+        print("Done training -- epoch limit reached")
